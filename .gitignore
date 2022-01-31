@@ -1,0 +1,6 @@
+.DS_Store
+assets/*
+*.env
+notes.md
+test.rest
+output/*
