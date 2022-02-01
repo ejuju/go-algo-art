@@ -2,6 +2,7 @@ package imgutil
 
 import (
 	"image"
+	"image/jpeg"
 	"image/png"
 	"log"
 	"os"
@@ -24,16 +25,24 @@ func OpenAndDecode(path string) (image.Image, string, error) {
 	return img, typ, err
 }
 
-// EncodeToNewFileWithPNG creates a new file at the given path on your local disk and encodes the provided image inside
-// This function uses the png.Encode() function from the standard library
-func EncodeToNewFileWithPNG(path string, img image.Image) error {
-	// Create a empty file
+// SavePNG creates a new file at the given path on your local disk and encodes the provided image inside in the PNG format
+func (img *Image) SavePNG(path string) error {
 	file, err := os.Create(path)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
 
-	// encode and return error
-	return png.Encode(file, img)
+	return png.Encode(file, img.Img)
+}
+
+// SaveJPG creates a new file at the given path on your local disk and encodes the provided image inside in the JPEG format
+func (img *Image) SaveJPG(path string, quality int) error {
+	file, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	return jpeg.Encode(file, img.Img, &jpeg.Options{Quality: 100})
 }
