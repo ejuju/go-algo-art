@@ -2,65 +2,101 @@ package main
 
 import (
 	"fmt"
-	"image"
 	_ "image/jpeg" // jpeg init
 	_ "image/png"  // png init
 	"strconv"
 	"time"
 
-	"github.com/ejuju/go-algo-art/pkg/imgutil"
+	"github.com/ejuju/go-algo-art/internal/imgutil"
 )
 
 func main() {
+	// rand.Seed(time.Now().UnixNano())
+
 	start := time.Now()
+	fmt.Println("Launching...")
 
-	routines := []string{
-		"assets/0.jpg",
-		"assets/1.jpg",
-		"assets/2.jpg",
-		"assets/3.jpg",
-		"assets/4.jpg",
-		"assets/5.jpg",
-	}
+	// assets := []string{
+	// 	"assets/0.jpg",
+	// 	"assets/1.jpg",
+	// 	"assets/2.jpg",
+	// 	"assets/4.jpg",
+	// 	"assets/5.jpg",
+	// }
 
-	errorsChan := make(chan error, len(routines))
+	// run := func(id string, assets []string) error {
+	// 	// define output file path
+	// 	outputPrefix := "output/output_"
+	// 	outputFmt := ".png"
+	// 	outputPath := outputPrefix + strconv.Itoa(int(time.Now().Unix())) + "_" + id + outputFmt
 
-	for i, input := range routines {
-		go work(errorsChan, i, input)
-	}
+	// 	// open input img
+	// 	img, _, err := imgutil.OpenAndDecode(assets[0])
+	// 	if err != nil {
+	// 		return err
+	// 	}
 
-	for waitI := 0; waitI < len(routines); waitI++ {
-		err := <-errorsChan
-		if err != nil {
-			fmt.Println(err)
-		}
-	}
+	// 	// transform img
+	// 	outputImg := imgutil.Transform(
+	// 		img,
+	// 		imgutil.ApplyNoise(1000, 200),
+	// 	)
+
+	// 	err = imgutil.SavePNG(outputPath, outputImg) // save result
+
+	// 	return err
+	// }
+
+	// w1 := worker.NewWorker("imgnoise",
+	// 	worker.NewTask("bend", assets, run),
+	// )
+	// errs, dur := w1.Work()
+	// fmt.Println(errs, dur)
+
+	// jobs := assets
+
+	// for i := range jobs {
+	// 	go work(errorsChan, i, assets)
+	// }
+
+	// for waitI := 0; waitI < len(jobs); waitI++ {
+	// 	err := <-errorsChan
+	// 	if err != nil {
+	// 		fmt.Println(err)
+	// 	}
+	// }
 
 	fmt.Println("Done in", time.Now().Sub(start).Seconds(), "seconds")
 }
 
-func work(ch chan error, i int, inputPath string) {
-	var img image.Image
-	var err error
+func work(ch chan error, jobID int, assets []string) {
+	// start timer
+	start := time.Now()
+	fmt.Println("Starting job", jobID)
 
-	if inputPath != "" {
-		img, _, err = imgutil.OpenAndDecode(inputPath)
+	// define output file path
+	outputPrefix := "output/output_"
+	outputFmt := ".png"
+	outputPath := outputPrefix + strconv.Itoa(int(time.Now().Unix())) + "_" + strconv.Itoa(jobID) + outputFmt
+
+	// open input img
+	img, _, err := imgutil.OpenAndDecode(assets[jobID])
+	if err != nil {
+		ch <- err
+		return
 	}
 
-	outputPath := "output/output_" + strconv.Itoa(int(time.Now().Unix())) + "_" + strconv.Itoa(i) + ".jpg"
-	start := time.Now()
+	// transform img
+	outputImg := imgutil.Transform(
+		img,
+		imgutil.ApplyNoise(1000, 200),
+	)
 
-	width := imgutil.WidthFromImg(img)
-	height := imgutil.HeightFromImg(img)
-	paddingX := width / 4
-	paddingY := height / 4
+	err = imgutil.SavePNG(outputPath, outputImg) // save result
 
-	err = imgutil.
-		NewImage(time.Now().String(), img).
-		BendPixels(1, paddingX, width-paddingX, paddingY, height-paddingY).
-		SaveJPG(outputPath, 100)
+	fmt.Println("error:", err)
 
-	fmt.Println("Routine lasted", time.Now().Sub(start).Seconds(), "seconds")
+	fmt.Println("Job took", time.Now().Sub(start).Seconds(), "seconds", "[jobID", jobID, "]")
 
 	ch <- err
 }

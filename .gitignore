@@ -4,3 +4,4 @@ assets/*
 notes.md
 test.rest
 output/*
+.vscode

@@ -26,23 +26,23 @@ func OpenAndDecode(path string) (image.Image, string, error) {
 }
 
 // SavePNG creates a new file at the given path on your local disk and encodes the provided image inside in the PNG format
-func (img *Image) SavePNG(path string) error {
+func SavePNG(path string, img image.Image) error {
 	file, err := os.Create(path)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
 
-	return png.Encode(file, img.Img)
+	return png.Encode(file, img)
 }
 
 // SaveJPG creates a new file at the given path on your local disk and encodes the provided image inside in the JPEG format
-func (img *Image) SaveJPG(path string, quality int) error {
+func SaveJPG(path string, img image.Image, opts *jpeg.Options) error {
 	file, err := os.Create(path)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
 
-	return jpeg.Encode(file, img.Img, &jpeg.Options{Quality: 100})
+	return jpeg.Encode(file, img, opts)
 }
